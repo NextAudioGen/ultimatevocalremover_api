@@ -726,47 +726,10 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
 
     def assemble_model_data(self, model=None, arch_type=ENSEMBLE_MODE, is_dry_check=False, is_change_def=False, is_get_hash_dir_only=False):
 
-        if arch_type == ENSEMBLE_STEM_CHECK:
-            
-            model_data = self.model_data_table
-            missing_models = [model.model_status for model in model_data if not model.model_status]
-            
-            if missing_models or not model_data:
-                model_data: List[ModelData] = [ModelData(model_name, is_dry_check=is_dry_check) for model_name in self.ensemble_model_list]
-                self.model_data_table = model_data
-
-        if arch_type == KARAOKEE_CHECK:
-            model_list = []
-            model_data: List[ModelData] = [ModelData(model_name, is_dry_check=is_dry_check) for model_name in self.default_change_model_list]
-            for model in model_data:
-                if model.model_status and model.is_karaoke or model.is_bv_model:
-                    model_list.append(model.model_and_process_tag)
-            
-            return model_list
-
-        if arch_type == ENSEMBLE_MODE:
-            model_data: List[ModelData] = [ModelData(model_name) for model_name in self.ensemble_listbox_get_all_selected_models()]
-        if arch_type == ENSEMBLE_CHECK:
-            model_data: List[ModelData] = [ModelData(model, is_change_def=is_change_def, is_get_hash_dir_only=is_get_hash_dir_only)]
-        if arch_type == VR_ARCH_TYPE or arch_type == VR_ARCH_PM:
-            model_data: List[ModelData] = [ModelData(model, VR_ARCH_TYPE)]
-        if arch_type == MDX_ARCH_TYPE:
-            model_data: List[ModelData] = [ModelData(model, MDX_ARCH_TYPE)]
-        if arch_type == DEMUCS_ARCH_TYPE:
-            model_data: List[ModelData] = [ModelData(model, DEMUCS_ARCH_TYPE)]#
+        model_data: List[ModelData] = [ModelData(model, DEMUCS_ARCH_TYPE)]#
 
         return model_data
     
-    # -Widget Methods--
-      
-    def get_files_from_dir(self, directory, ext, is_mdxnet=False):
-        """Gets files from specified directory that ends with specified extention"""
-        
-        return tuple(
-            x if is_mdxnet and x.endswith(CKPT) else os.path.splitext(x)[0]
-            for x in os.listdir(directory)
-            if x.endswith(ext)
-        )
     
     def verify_audio(self, audio_file, is_process=True, sample_path=None):
         is_good = False
@@ -825,26 +788,6 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
 
     #--Processing Methods-- 
 
-    def process_input_selections(self):
-        """Grabbing all audio files from selected directories."""
-        
-        input_list = []
-
-        ext = FFMPEG_EXT if not self.is_accept_any_input_var.get() else ANY_EXT
-
-        for i in self.inputPaths:
-            if os.path.isfile(i):
-                if i.endswith(ext):
-                    input_list.append(i)
-            for root, dirs, files in os.walk(i):
-                for file in files:
-                    if file.endswith(ext):
-                        file = os.path.join(root, file)
-                        if os.path.isfile(file):
-                            input_list.append(file)
-                                         
-        self.inputPaths = tuple(input_list)
-
     def process_check_wav_type(self):
         if self.wav_type_set_var.get() == '32-bit Float':
             self.wav_type_set = 'FLOAT'
@@ -868,26 +811,6 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
             continue_process = lambda:False if self.demucs_model_var.get() == CHOOSE_MODEL else True
 
         return continue_process()
-
-    def process_storage_check(self):
-        """Verifies storage requirments"""
-        
-        total, used, free = shutil.disk_usage("/") 
-        
-        space_details = f'Detected Total Space: {int(total/1.074e+9)} GB\'s\n' +\
-                        f'Detected Used Space: {int(used/1.074e+9)} GB\'s\n' +\
-                        f'Detected Free Space: {int(free/1.074e+9)} GB\'s\n'
-            
-        appropriate_storage = True
-            
-        if int(free/1.074e+9) <= int(2):
-            self.error_dialoge([STORAGE_ERROR[0], f'{STORAGE_ERROR[1]}{space_details}'])
-            appropriate_storage = False
-        
-        if int(free/1.074e+9) in [3, 4, 5, 6, 7, 8]:
-            appropriate_storage = self.message_box([STORAGE_WARNING[0], f'{STORAGE_WARNING[1]}{space_details}{CONFIRM_WARNING}'])
-                        
-        return appropriate_storage
 
     def process_initialize(self):
         """Verifies the input/output directories are valid and prepares to thread the main process."""
@@ -1180,147 +1103,73 @@ class MainWindow(TkinterDnD.Tk if is_dnd_compatible else tk.Tk):
         
         return 0
         
-    def process_start(self):
+    def process_start(self, inputPath):
         """Start the conversion for all the given mp3 and wav files"""
         
-        stime = time.perf_counter()
-        time_elapsed = lambda:f'Time Elapsed: {time.strftime("%H:%M:%S", time.gmtime(int(time.perf_counter() - stime)))}'
-        export_path = self.export_path_var.get()
-        is_ensemble = False
-        self.true_model_count = 0
-        self.iteration = 0
-        is_verified_audio = True
-        self.process_button_init()
-        inputPaths = self.inputPaths
-        inputPath_total_len = len(inputPaths)
-        is_model_sample_mode = self.model_sample_mode_var.get()
+        # try:
+           
+        model = self.assemble_model_data("demucs_model_var", DEMUCS_ARCH_TYPE)
+
         
-        try:
-            if self.chosen_process_method_var.get() == ENSEMBLE_MODE:
-                model, ensemble = self.assemble_model_data(), Ensembler()
-                export_path, is_ensemble = ensemble.ensemble_folder_name, True
-            if self.chosen_process_method_var.get() == VR_ARCH_PM:
-                model = self.assemble_model_data(self.vr_model_var.get(), VR_ARCH_TYPE)
-            if self.chosen_process_method_var.get() == MDX_ARCH_TYPE:
-                model = self.assemble_model_data(self.mdx_net_model_var.get(), MDX_ARCH_TYPE)
-            if self.chosen_process_method_var.get() == DEMUCS_ARCH_TYPE:
-                model = self.assemble_model_data(self.demucs_model_var.get(), DEMUCS_ARCH_TYPE)
+        true_model_4_stem_count = sum(m.demucs_4_stem_added_count if m.process_method == DEMUCS_ARCH_TYPE else 0 for m in model)
+        true_model_pre_proc_model_count = sum(2 if m.pre_proc_model_activated else 0 for m in model)
+        self.true_model_count = sum(2 if m.is_secondary_model_activated else 1 for m in model) + true_model_4_stem_count + true_model_pre_proc_model_count + self.determine_voc_split(model)
 
-            self.cached_source_model_list_check(model)
+        #print("self.true_model_count", self.true_model_count)
+
+        audio_file = inputPath
+
+        # if self.verify_audio(audio_file):
+        #     audio_file = self.create_sample(audio_file) if is_model_sample_mode else audio_file
+
+
+        for current_model_num, current_model in enumerate(model, start=1):
+            self.iteration += 1
+
+            if is_ensemble:
+                self.command_Text.write(f'Ensemble Mode - {current_model.model_basename} - Model {current_model_num}/{len(model)}{NEW_LINES}')
+
+            model_name_text = f'({current_model.model_basename})' if not is_ensemble else ''
+            self.command_Text.write(base_text + f'{LOADING_MODEL_TEXT} {model_name_text}...')
+
+            set_progress_bar = lambda step, inference_iterations=0:self.process_update_progress(total_files=inputPath_total_len, step=(step + (inference_iterations)))
+            write_to_console = lambda progress_text, base_text=base_text:self.command_Text.write(base_text + progress_text)
+
+            audio_file_base = f"{file_num}_{os.path.splitext(os.path.basename(audio_file))[0]}"
+            audio_file_base = audio_file_base if not self.is_testing_audio_var.get() or is_ensemble else f"{round(time.time())}_{audio_file_base}"
+            audio_file_base = audio_file_base if not is_ensemble else f"{audio_file_base}_{current_model.model_basename}"
+            if not is_ensemble:
+                audio_file_base = audio_file_base if not self.is_add_model_name_var.get() else f"{audio_file_base}_{current_model.model_basename}"
+
+            if self.is_create_model_folder_var.get() and not is_ensemble:
+                export_path = os.path.join(Path(self.export_path_var.get()), current_model.model_basename, os.path.splitext(os.path.basename(audio_file))[0])
+                if not os.path.isdir(export_path):os.makedirs(export_path) 
+
+            process_data = {
+                            'model_data': current_model, 
+                            'export_path': export_path,
+                            'audio_file_base': audio_file_base,
+                            'audio_file': audio_file,
+                            'set_progress_bar': set_progress_bar,
+                            'write_to_console': write_to_console,
+                            'process_iteration': self.process_iteration,
+                            'cached_source_callback': self.cached_source_callback,
+                            'cached_model_source_holder': self.cached_model_source_holder,
+                            'list_all_models': self.all_models,
+                            'is_ensemble_master': False,
+                            'is_4_stem_ensemble': True if self.ensemble_main_stem_var.get() in [FOUR_STEM_ENSEMBLE, MULTI_STEM_ENSEMBLE] and is_ensemble else False}
             
-            true_model_4_stem_count = sum(m.demucs_4_stem_added_count if m.process_method == DEMUCS_ARCH_TYPE else 0 for m in model)
-            true_model_pre_proc_model_count = sum(2 if m.pre_proc_model_activated else 0 for m in model)
-            self.true_model_count = sum(2 if m.is_secondary_model_activated else 1 for m in model) + true_model_4_stem_count + true_model_pre_proc_model_count + self.determine_voc_split(model)
-
-            #print("self.true_model_count", self.true_model_count)
-
-            for file_num, audio_file in enumerate(inputPaths, start=1):
-                self.cached_sources_clear()
-                base_text = self.process_get_baseText(total_files=inputPath_total_len, file_num=file_num)
-
-                if self.verify_audio(audio_file):
-                    audio_file = self.create_sample(audio_file) if is_model_sample_mode else audio_file
-                    self.command_Text.write(f'{NEW_LINE if not file_num ==1 else NO_LINE}{base_text}"{os.path.basename(audio_file)}\".{NEW_LINES}')
-                    is_verified_audio = True
-                else:
-                    error_text_console = f'{base_text}"{os.path.basename(audio_file)}\" {MISSING_MESS_TEXT}\n'
-                    self.command_Text.write(f'\n{error_text_console}') if inputPath_total_len >= 2 else None
-                    self.iteration += self.true_model_count
-                    is_verified_audio = False
-                    continue
-
-                for current_model_num, current_model in enumerate(model, start=1):
-                    self.iteration += 1
-
-                    if is_ensemble:
-                        self.command_Text.write(f'Ensemble Mode - {current_model.model_basename} - Model {current_model_num}/{len(model)}{NEW_LINES}')
-
-                    model_name_text = f'({current_model.model_basename})' if not is_ensemble else ''
-                    self.command_Text.write(base_text + f'{LOADING_MODEL_TEXT} {model_name_text}...')
-
-                    set_progress_bar = lambda step, inference_iterations=0:self.process_update_progress(total_files=inputPath_total_len, step=(step + (inference_iterations)))
-                    write_to_console = lambda progress_text, base_text=base_text:self.command_Text.write(base_text + progress_text)
-
-                    audio_file_base = f"{file_num}_{os.path.splitext(os.path.basename(audio_file))[0]}"
-                    audio_file_base = audio_file_base if not self.is_testing_audio_var.get() or is_ensemble else f"{round(time.time())}_{audio_file_base}"
-                    audio_file_base = audio_file_base if not is_ensemble else f"{audio_file_base}_{current_model.model_basename}"
-                    if not is_ensemble:
-                        audio_file_base = audio_file_base if not self.is_add_model_name_var.get() else f"{audio_file_base}_{current_model.model_basename}"
-
-                    if self.is_create_model_folder_var.get() and not is_ensemble:
-                        export_path = os.path.join(Path(self.export_path_var.get()), current_model.model_basename, os.path.splitext(os.path.basename(audio_file))[0])
-                        if not os.path.isdir(export_path):os.makedirs(export_path) 
-
-                    process_data = {
-                                    'model_data': current_model, 
-                                    'export_path': export_path,
-                                    'audio_file_base': audio_file_base,
-                                    'audio_file': audio_file,
-                                    'set_progress_bar': set_progress_bar,
-                                    'write_to_console': write_to_console,
-                                    'process_iteration': self.process_iteration,
-                                    'cached_source_callback': self.cached_source_callback,
-                                    'cached_model_source_holder': self.cached_model_source_holder,
-                                    'list_all_models': self.all_models,
-                                    'is_ensemble_master': is_ensemble,
-                                    'is_4_stem_ensemble': True if self.ensemble_main_stem_var.get() in [FOUR_STEM_ENSEMBLE, MULTI_STEM_ENSEMBLE] and is_ensemble else False}
-                    
-                    if current_model.process_method == VR_ARCH_TYPE:
-                        seperator = SeperateVR(current_model, process_data)
-                    if current_model.process_method == MDX_ARCH_TYPE:
-                        seperator = SeperateMDXC(current_model, process_data) if current_model.is_mdx_c else SeperateMDX(current_model, process_data)
-                    if current_model.process_method == DEMUCS_ARCH_TYPE:
-                        seperator = SeperateDemucs(current_model, process_data)
-                        
-                    seperator.seperate()
-                    
-                    if is_ensemble:
-                        self.command_Text.write('\n')
-
-                if is_ensemble:
-                    
-                    audio_file_base = audio_file_base.replace(f"_{current_model.model_basename}","")
-                    self.command_Text.write(base_text + ENSEMBLING_OUTPUTS)
-                    
-                    if self.ensemble_main_stem_var.get() in [FOUR_STEM_ENSEMBLE, MULTI_STEM_ENSEMBLE]:
-                        stem_list = extract_stems(audio_file_base, export_path)
-                        for output_stem in stem_list:
-                            ensemble.ensemble_outputs(audio_file_base, export_path, output_stem, is_4_stem=True)
-                    else:
-                        if not self.is_secondary_stem_only_var.get():
-                            ensemble.ensemble_outputs(audio_file_base, export_path, PRIMARY_STEM)
-                        if not self.is_primary_stem_only_var.get():
-                            ensemble.ensemble_outputs(audio_file_base, export_path, SECONDARY_STEM)
-                            ensemble.ensemble_outputs(audio_file_base, export_path, SECONDARY_STEM, is_inst_mix=True)
-
-                    self.command_Text.write(DONE)
-                    
-                if is_model_sample_mode:
-                    if os.path.isfile(audio_file):
-                        os.remove(audio_file)
-                    
-                clear_gpu_cache()
+            
+            seperator = SeperateDemucs(current_model, process_data)
                 
-            shutil.rmtree(export_path) if is_ensemble and len(os.listdir(export_path)) == 0 else None
+            seperator.seperate()
+            
+            
+    
+            
+        clear_gpu_cache()
 
-            if inputPath_total_len == 1 and not is_verified_audio:
-                self.command_Text.write(f'{error_text_console}\n{PROCESS_FAILED}')
-                self.command_Text.write(time_elapsed())
-                playsound(FAIL_CHIME) if self.is_task_complete_var.get() else None
-            else:
-                set_progress_bar(1.0)
-                self.command_Text.write(PROCESS_COMPLETE)
-                self.command_Text.write(time_elapsed())
-                playsound(COMPLETE_CHIME) if self.is_task_complete_var.get() else None
-                
-            self.process_end()
-                        
-        except Exception as e:
-            self.error_log_var.set("{}{}".format(error_text(self.chosen_process_method_var.get(), e), self.get_settings_list()))
-            self.command_Text.write(f'\n\n{PROCESS_FAILED}')
-            self.command_Text.write(time_elapsed())
-            playsound(FAIL_CHIME) if self.is_task_complete_var.get() else None
-            self.process_end(error=e)
+
 
 
 def extract_stems(audio_file_base, export_path):
