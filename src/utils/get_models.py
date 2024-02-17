@@ -1,11 +1,12 @@
 import os
 import glob 
+import urllib.request 
 
-def download_model(model_name:str, model_path:str, model_arch:str, logger=None)->str:
+def download_model(model_path:str, model_arch:str, model_name:str=None, logger=None)->str:
     """Download model from Hugging Face model hub
     
     Args:
-        model_name (str): model name.
+        model_name (str): model name. IT IS NOT USED AT THE MOMENT DO NOT USE IT. Defaults to None.
         model_path (str): model path to download the model from.
         model_arch (str): model architecture. A path in ../models_dir/{model_arch}/weights/{model_name}
                             If path is not found it will be created. And if the model is already downloaded it will not be downloaded again.
@@ -16,7 +17,8 @@ def download_model(model_name:str, model_path:str, model_arch:str, logger=None)-
     """
     current_path = os.getcwd()
     save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights")
-    
+    model_name = model_path.split("/")[-1]
+
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
@@ -27,12 +29,13 @@ def download_model(model_name:str, model_path:str, model_arch:str, logger=None)-
         return local_model_path
     
     try:
-        os.system(f"wget {model_path} -P {local_model_path}")
+        # os.system(f"wget {model_path} -P {local_model_path}")
+        urllib.request.urlretrieve(model_path, local_model_path)
         if logger:
             logger.info(f"Downloaded {model_name} from {model_path}")
         
         
-        return model_path
+        return local_model_path
     
     except Exception as e:
         if logger:

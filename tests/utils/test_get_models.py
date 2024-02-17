@@ -1,4 +1,5 @@
 import os
+import shutil
 from ...src.utils import get_models
 
 def is_samepath(path1, path2):
@@ -7,7 +8,10 @@ def is_samepath(path1, path2):
 def rm_models_dir(model_arch):
     current_path = os.getcwd()
     rm_path = os.path.join(current_path, "src", "models_dir", model_arch)
-    os.remove(rm_path)
+    rm_path = os.path.abspath(rm_path)
+    # print("rm_path", rm_path)
+    # os.remove(rm_path)
+    shutil.rmtree(rm_path)
 
 def test_model_dont_exists():
     model_name = "model_name"
@@ -42,7 +46,6 @@ def test_model_exists_no_extension():
     assert get_models.model_exists("model_name", model_arch) == True
     rm_models_dir(model_arch)
     
-
 def test_download_model():
     model_arch = "model_arch"
     # model_name = "model_name"
@@ -54,7 +57,7 @@ def test_download_model():
     local_model_path = os.path.join(save_path, model_name)
     assert is_samepath(path, local_model_path) == True
     assert os.path.isfile(local_model_path) == True
-    rm_models_dir(model_arch)
+    # rm_models_dir(model_arch)
 
 test_models_json = {
     "arch1":{
