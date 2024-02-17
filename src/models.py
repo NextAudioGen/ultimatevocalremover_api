@@ -1,8 +1,9 @@
 import types
-from utils.get_models import download_model, model_exists
+from .utils.get_models import download_model, model_exists
 import json 
-from models_dir.demucs.demucs import api as demucs_api
+from .models_dir.demucs.demucs import api as demucs_api
 import torch
+import os
 
 with open("models.json", "r") as f:
     models_json = json.load(f)
@@ -74,8 +75,10 @@ class BaseModel:
 
 class Demucs(BaseModel):
     
-    def __init__(self, name:str, architecture:str, other_metadata:dict, device=None, logger=None):
-        super().__init__(name, architecture, other_metadata)
+    def __init__(self, other_metadata:dict, name:str="htdemucs", device=None, logger=None):
+        super().__init__(name, architecture="Demucs", other_metadata=other_metadata)
+        current_path = os.getcwd()
+        self.model_path = os.path.join(current_path, "src", "models_dir", "demucs", "weights", name) 
         self.model_api = demucs_api.Separator(self.name, repo=self.model_path, device=self.device, **other_metadata)
 
     def __call__(self, audio, sampling_rate)->dict:
