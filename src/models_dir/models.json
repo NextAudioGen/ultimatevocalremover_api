@@ -1,0 +1,10 @@
+{
+    "demucs":{
+        "hdemucs_mmi":{
+            "model_path":[
+                "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/75fc33f5-1941ce65.th",
+                "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/hdemucs_mmi.yaml"
+            ]
+        }
+    }
+}

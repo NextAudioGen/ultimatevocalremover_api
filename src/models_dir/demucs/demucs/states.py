@@ -56,6 +56,7 @@ def load_model(path_or_package, strict=False):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             path = path_or_package
+            print("path:", path)
             package = torch.load(path, 'cpu')
     else:
         raise ValueError(f"Invalid type for {path_or_package}.")

@@ -2,10 +2,21 @@ import types
 from .utils.get_models import download_model, model_exists
 import json 
 from .models_dir.demucs.demucs import api as demucs_api
+from .models_dir.demucs import demucs 
 import torch
 import os
+from pathlib import Path
+import sys
+import numpy.typing as npt
+from .utils.fastio import read
+# from functools import singledispatch
+from typing import Union
 
-with open("models.json", "r") as f:
+sys.modules['demucs'] = demucs  # creates a packageA entry in sys.modules
+
+current_path = os.getcwd()
+models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+with open(models_json_path, "r") as f:
     models_json = json.load(f)
 class BaseModel:
     def __init__(self, name:str, architecture:str, other_metadata:dict, device=None, logger=None):
@@ -31,14 +42,26 @@ class BaseModel:
 
         self.device = device
         self.model_path = download_model(model_name=name, model_path=self.remote_model_path,
-                                         architecture=architecture, logger=logger)
+                                         model_arch=architecture, logger=logger)
 
-    def __call__(self, audio, sampling_rate)->dict:
+    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None)->dict:
+        if isinstance(audio, str):
+            return self.predict_path(audio)
+        return self.predict(audio, sampling_rate)
+
+    # @singledispatch
+    def predict(self, audio:npt.NDArray, sampling_rate:int)->dict:
         raise NotImplementedError
-
-    def predict(self, audio)->dict:
-        return self.__call__(audio)
     
+    # @predict.register
+    def predict_path(self, audio:str)->dict:
+        # audio, sampling_rate = read(audio)
+        # return self.predict(audio, sampling_rate)
+        raise NotImplementedError
+    
+    def separate(self, audio:npt.NDArray, sampling_rate:int=None)->dict:
+        return self.__call__(audio, sampling_rate)
+
     def __repr__(self):
         return f"Architecture {self.architecture}, model {self.name}. With other_metadata {self.other_metadata}"
     
@@ -76,15 +99,25 @@ class BaseModel:
 class Demucs(BaseModel):
     
     def __init__(self, other_metadata:dict, name:str="htdemucs", device=None, logger=None):
-        super().__init__(name, architecture="Demucs", other_metadata=other_metadata)
+        super().__init__(name, architecture="demucs", other_metadata=other_metadata)
         current_path = os.getcwd()
         self.model_path = os.path.join(current_path, "src", "models_dir", "demucs", "weights", name) 
-        self.model_api = demucs_api.Separator(self.name, repo=self.model_path, device=self.device, **other_metadata)
+        self.model_api = demucs_api.Separator(self.name, repo=Path(self.model_path), device=self.device, **other_metadata)
+        self.sample_rate = self.model_api._samplerate
+  
+    def predict(self, audio:npt.NDArray, sampling_rate:int)->dict:
+        """Separate the audio into its components
 
-    def __call__(self, audio, sampling_rate)->dict:
+        Args:
+            audio (np.array): audio data
+            sampling_rate (int): sampling rate
+
+        Returns:
+            dict: separated audio
+        """
         origin, separated = self.model_api.separate_tensor(audio, sampling_rate)
         return {"origin":origin, "separated":separated}
-        
+    
     def to(self, device:str):
         self.model_api.update_parameter(device=device)
         self.model_api.model.to(device)
@@ -96,3 +129,8 @@ class Demucs(BaseModel):
     def update_metadata(self, metadata:dict):
         self.model_api.update_parameter(**metadata)
         self.other_metadata.update(metadata)
+
+    def predict_path(self, audio: str) -> dict:
+        audio, sampling_rate = read(audio)
+        audio = torch.tensor(audio)
+        return self.predict(audio, sampling_rate)

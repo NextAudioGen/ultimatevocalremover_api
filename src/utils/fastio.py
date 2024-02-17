@@ -6,7 +6,7 @@ import types
 from typing import Union, List, Tuple
 import numpy.typing as npt
 
-def read(path:str, insure_2d:bool=True, logger=None)->Tuple[npt.NDArray, int]:
+def read(path:str, insure_2d:bool=True, sampling_rate=None, logger=None)->Tuple[npt.NDArray, int]:
     """Read audio file first try with audiofile then with soundfile and last with librosa
     
     Args:
@@ -25,11 +25,11 @@ def read(path:str, insure_2d:bool=True, logger=None)->Tuple[npt.NDArray, int]:
     """
 
     ext = path.split('.')[-1]
+    signal, sampling_rate = None, None
 
     if ext in ['wav', 'flac', 'ogg', 'mp3']:
         try: 
             signal, sampling_rate = af.read(path)
-            return insure_2d_signal(signal, insure_2d, logger), sampling_rate
         except Exception as e:
             if logger:
                 logger.warning(f"audiofile failed to read {path} with error {e}")
@@ -37,18 +37,23 @@ def read(path:str, insure_2d:bool=True, logger=None)->Tuple[npt.NDArray, int]:
     
     try:
         signal, sampling_rate = sf.read(path)
-        return insure_2d_signal(signal, insure_2d, logger), sampling_rate
     except Exception as e:
         if logger:
             logger.warning(f"soundfile failed to read {path} with error {e}")
     
     try:
         signal, sampling_rate = librosa.load(path, sr=None, mono=False)
-        return insure_2d_signal(signal, insure_2d, logger), sampling_rate
     except Exception as e:
         if logger:
             logger.error(f"librosa failed to read {path} with error {e}")
     
+    if sampling_rate is not None:
+        pass
+
+    if signal is not None:
+        signal = insure_2d_signal(signal, insure_2d, logger)
+        return signal, sampling_rate
+
     raise ValueError(f"Failed to read {path} with any of the available libraries")
     
 
