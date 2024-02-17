@@ -57,7 +57,7 @@ def test_download_model():
     local_model_path = os.path.join(save_path, model_name)
     assert is_samepath(path, local_model_path) == True
     assert os.path.isfile(local_model_path) == True
-    # rm_models_dir(model_arch)
+    rm_models_dir(model_arch)
 
 test_models_json = {
     "arch1":{
@@ -82,11 +82,18 @@ def test_get_all_models():
         }
     }
 
-    models = get_models.get_all_models(test_models_json)
+    models = get_models.download_all_models(test_models_json)
     for arch in test_models_json_res:
         assert arch in models
         for model in test_models_json_res[arch]:
             assert model in models[arch]
-            assert is_samepath(models[arch][model], test_models_json_res[arch][model]) == True
+            # print(models[arch][model])
+            current_path = os.getcwd()
+            ref_model_path = test_models_json_res[arch][model]
+            ref_model_path = os.path.join(current_path, "src", "models_dir", arch, "weights", ref_model_path)
+            assert is_samepath(models[arch][model], ref_model_path) == True
+        
+        rm_models_dir(arch)
+
 
 

@@ -96,7 +96,7 @@ def download_all_models(models_json:dict, logger=None)->dict:
         paths[model_arch] = {}
         for model_name, model_data in models.items():
             model_path = model_data["model_path"]
-            model_path = download_model(model_name, model_path, model_arch, logger=logger)
+            model_path = download_model(model_path=model_path, model_arch=model_arch, logger=logger)
             paths[model_arch][model_name] = model_path
 
     return paths
