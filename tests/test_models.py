@@ -23,7 +23,7 @@ def test_demucs_load():
     demucs = models.Demucs(name="hdemucs_mmi", other_metadata={}, 
                            device=device, logger=None)
     
-    name = "/Users/mohannadbarakat/Downloads/onlymp3.to - مهرجان لو كنت قدي انزل تحدي الدخلاوية في امريكا فريق الاحلام الدخلاوية البوم سكة الادمان 2017-WeLg_g2Ccrg-192k-1707990140.mp3"
+    name = ""
     # Separating an audio file
     res = demucs(name)
     assert res is not None
