@@ -30,3 +30,8 @@ venv/
 ffmpeg*
 
 **/weights/
+
+base.mp3
+drums.mp3
+vocals.mp3
+other.mp3
