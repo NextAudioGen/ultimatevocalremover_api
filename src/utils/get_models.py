@@ -15,7 +15,7 @@ def download_model(model_name:str, model_path:str, model_arch:str, logger=None)-
         str: path to the downloaded model
     """
     current_path = os.getcwd()
-    save_path = os.path.join(current_path, "..", "models_dir", model_arch, "weights")
+    save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights")
     
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -55,7 +55,7 @@ def model_exists(model_name:str, model_arch:str)->bool:
         model_name = model_name.split('.')[0]
     
     current_path = os.getcwd()
-    save_path = os.path.join(current_path, "..", "models_dir", model_arch, "weights")
+    save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights")
     local_model_path = os.path.join(save_path, model_name)
     local_model_path += ".*" # check for any file with the same name
     for name in glob.glob(local_model_path): 
