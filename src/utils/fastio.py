@@ -6,7 +6,7 @@ import types
 from typing import Union, List, Tuple
 import numpy.typing as npt
 
-def read(path:str, insure_2d:bool=True, sampling_rate=None, logger=None)->Tuple[npt.NDArray, int]:
+def read(path:str, insure_2d:bool=True, target_sampling_rate=None, logger=None)->Tuple[npt.NDArray, int]:
     """Read audio file first try with audiofile then with soundfile and last with librosa
     
     Args:
@@ -34,21 +34,23 @@ def read(path:str, insure_2d:bool=True, sampling_rate=None, logger=None)->Tuple[
             if logger:
                 logger.warning(f"audiofile failed to read {path} with error {e}")
 
-    
-    try:
-        signal, sampling_rate = sf.read(path)
-    except Exception as e:
-        if logger:
-            logger.warning(f"soundfile failed to read {path} with error {e}")
-    
-    try:
-        signal, sampling_rate = librosa.load(path, sr=None, mono=False)
-    except Exception as e:
-        if logger:
-            logger.error(f"librosa failed to read {path} with error {e}")
-    
-    if sampling_rate is not None:
-        pass
+    if signal is None:
+        try:
+            signal, sampling_rate = sf.read(path)
+        except Exception as e:
+            if logger:
+                logger.warning(f"soundfile failed to read {path} with error {e}")
+
+    if signal is None: 
+        try:
+            signal, sampling_rate = librosa.load(path, sr=None, mono=False)
+        except Exception as e:
+            if logger:
+                logger.error(f"librosa failed to read {path} with error {e}")
+        
+    if target_sampling_rate is not None:
+        signal = librosa.resample(signal, sampling_rate, target_sampling_rate)
+        sampling_rate = target_sampling_rate
 
     if signal is not None:
         signal = insure_2d_signal(signal, insure_2d, logger)
