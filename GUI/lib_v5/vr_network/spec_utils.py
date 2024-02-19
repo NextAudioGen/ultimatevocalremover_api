@@ -5,7 +5,7 @@ import soundfile as sf
 import math
 import platform
 import traceback
-from . import pyrb
+import pyrb
 from scipy.signal import correlate, hilbert
 import io
 
@@ -31,7 +31,7 @@ is_macos = False
 if OPERATING_SYSTEM == 'Windows':
     from pyrubberband import pyrb
 else:
-    from . import pyrb
+    import pyrb
 
 if OPERATING_SYSTEM == 'Darwin':
     wav_resolution = "polyphase" if SYSTEM_PROC == ARM or ARM in SYSTEM_ARCH else "sinc_fastest" 
