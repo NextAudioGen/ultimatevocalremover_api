@@ -31,7 +31,7 @@ is_macos = False
 if OPERATING_SYSTEM == 'Windows':
     from pyrubberband import pyrb
 else:
-    import pyrb
+    from . import pyrb
 
 if OPERATING_SYSTEM == 'Darwin':
     wav_resolution = "polyphase" if SYSTEM_PROC == ARM or ARM in SYSTEM_ARCH else "sinc_fastest" 
