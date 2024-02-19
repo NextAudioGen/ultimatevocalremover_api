@@ -31,5 +31,10 @@ ffmpeg*
 
 **/weights/
 
-**/*.mp3
+base.mp3
+drums.mp3
+vocals.mp3
+other.mp3
+
 **/*.wav
+**/*.mp3

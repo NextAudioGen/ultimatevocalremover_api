@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from . import layers
+import layers
 
 class BaseASPPNet(nn.Module):
 

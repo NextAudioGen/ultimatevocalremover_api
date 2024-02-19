@@ -6,5 +6,12 @@
                 "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/hdemucs_mmi.yaml"
             ]
         }
+    },
+    "vr_network":{
+        "1_HP-UVR":{
+            "model_path":[
+                "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/1_HP-UVR.pth"
+            ]
+        }
     }
 }

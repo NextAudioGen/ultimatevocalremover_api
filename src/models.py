@@ -3,6 +3,7 @@ from .utils.get_models import download_model, model_exists
 import json 
 from .models_dir.demucs.demucs import api as demucs_api
 from .models_dir.demucs import demucs 
+from .models_dir.vr_network import vr_interface as vr_api
 import torch
 import os
 from pathlib import Path
@@ -44,17 +45,15 @@ class BaseModel:
         self.model_path = download_model(model_name=name, model_path=self.remote_model_path,
                                          model_arch=architecture, logger=logger)
 
-    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None)->dict:
-        if isinstance(audio, str):
-            return self.predict_path(audio)
-        return self.predict(audio, sampling_rate)
+    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, **kwargs)->dict:
+        raise NotImplementedError
 
     # @singledispatch
-    def predict(self, audio:npt.NDArray, sampling_rate:int)->dict:
+    def predict(self, audio:npt.NDArray, sampling_rate:int, **kwargs)->dict:
         raise NotImplementedError
     
     # @predict.register
-    def predict_path(self, audio:str)->dict:
+    def predict_path(self, audio:str, **kwargs)->dict:
         # audio, sampling_rate = read(audio)
         # return self.predict(audio, sampling_rate)
         raise NotImplementedError
@@ -105,7 +104,7 @@ class Demucs(BaseModel):
         self.model_api = demucs_api.Separator(self.name, repo=Path(self.model_path), device=self.device, **other_metadata)
         self.sample_rate = self.model_api._samplerate
   
-    def predict(self, audio:npt.NDArray, sampling_rate:int)->dict:
+    def predict(self, audio:npt.NDArray, sampling_rate:int, **kwargs)->dict:
         """Separate the audio into its components
 
         Args:
@@ -130,8 +129,127 @@ class Demucs(BaseModel):
         self.model_api.update_parameter(**metadata)
         self.other_metadata.update(metadata)
 
-    def predict_path(self, audio: str) -> dict:
+    def predict_path(self, audio: str, **kwargs) -> dict:
         audio, sampling_rate = read(audio)
         audio = torch.tensor(audio, dtype=torch.float32)
         return self.predict(audio, sampling_rate)
     
+    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, **kwargs)->dict:
+        if isinstance(audio, str):
+            return self.predict_path(audio)
+        return self.predict(audio, sampling_rate)
+
+class VrNetwork(BaseModel):
+    def __init__(self, other_metadata:dict, name:str="1_HP-UVR", device=None, logger=None):
+        """
+        Args:
+            other_metadata (dict): Other metadata for the model. Most importantly the aggressiveness
+            name (str, optional): Model name. Defaults to "1_HP-UVR.pth".
+            device (str, optional): device to run the model on. If None the model will run gpu if available. Defaults to None.
+            logger (_type_, optional): logger. Defaults to None.
+        """
+        super().__init__(name, architecture="vr_network", other_metadata=other_metadata)
+        current_path = os.getcwd()
+        model_path = os.path.join(current_path, "src", "models_dir", "vr_network", "weights", name) 
+        
+        files = os.listdir(model_path)
+        for file_ in files:
+            if file_.split(".")[-1] in self.allowed_model_extensions():
+                self.model_path = os.path.join(model_path, file_)
+                break
+
+        model_run, mp, is_vr_51_model, stems  = vr_api.load_model(self.model_path, device)
+        
+        self.model_run = model_run
+        self.mp = mp
+        self.is_vr_51_model = is_vr_51_model
+        self.stems = stems
+
+        self.sample_rate = self.mp.param['sr']
+
+        self.set_aggressiveness()
+        self.to(device)
+
+    def allowed_model_extensions(self):
+        return ["pth", "pt", "pkl", "ckpt"]
+        
+    def set_aggressiveness(self):
+        # make sure the aggressiveness is set
+        if "aggressiveness" not in self.other_metadata: self.other_metadata["aggressiveness"] = 0.05
+
+        self.aggressiveness = {'value': self.other_metadata["aggressiveness"], 
+                                'split_bin': self.mp.param['band'][1]['crop_stop'], 
+                                'aggr_correction': self.mp.param.get('aggr_correction')
+                                }
+    
+    def set_inference_params(self, prams:Union[None, dict]):
+        if prams is None: prams = {}
+
+        if not "wav_type_set" in prams: prams["wav_type_set"] = 'PCM_U8'
+        if not "window_size" in prams: prams["window_size"] = 512
+        if not "post_process_threshold" in prams: prams["post_process_threshold"] = None
+        if not "batch_size" in prams: prams["batch_size"] = 4
+        if not "is_tta" in prams: prams["is_tta"] = False
+        if not "normaliz" in prams: prams["normaliz"] = False
+        if not "high_end_process" in prams: prams["high_end_process"] = False
+        if not "input_high_end" in prams: prams["input_high_end"] = False
+        if not "input_high_end_h" in prams: prams["input_high_end_h"] = False
+        
+        return prams
+
+    def predict(self, audio:Union[npt.NDArray, str], sampling_rate:int, prams:Union[None, dict])->dict:
+        
+        prams = self.set_inference_params(prams)
+        inp, input_high_end, input_high_end_h = vr_api.loading_mix(audio,
+                                                                   self.mp, 
+                                                                   self.is_vr_51_model, 
+                                                                   wav_type_set=prams["wav_type_set"], 
+                                                                   high_end_process=prams["high_end_process"])
+
+
+        y_spec, v_spec = vr_api.inference_vr(X_spec=inp, 
+                                             aggressiveness=self.aggressiveness, 
+                                             window_size=prams["window_size"],
+                                             model_run=self.model_run, 
+                                             is_tta=prams["is_tta"], 
+                                             batch_size=prams["batch_size"], 
+                                             post_process_threshold=prams["post_process_threshold"], 
+                                             primary_stem=self.stems["primary_stem"],
+                                             device=self.device)
+
+
+        audio_res = vr_api.get_audio_dict(y_spec=y_spec, 
+                                          v_spec=v_spec, 
+                                          stems=self.stems, 
+                                          model_params=self.mp,
+                                          normaliz=prams["normaliz"], 
+                                          is_vr_51_model=["is_vr_51_model"],
+                                          high_end_process=["high_end_process"], 
+                                          input_high_end=input_high_end, 
+                                          input_high_end_h=input_high_end_h)
+
+        return audio_res
+    
+    def to(self, device:str):
+        self.device = device
+        self.model_run.to(device)
+
+    def update_metadata(self, metadata:dict):
+        self.other_metadata.update(metadata)
+        self.set_aggressiveness()
+
+    def predict_path(self, audio: str, prams:dict=None, **kwargs) -> dict:
+        # audio, sampling_rate = read(audio)
+        # audio = torch.tensor(audio, dtype=torch.float32)
+        return self.predict(audio, None, prams)
+
+    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, prams:dict=None, **kwargs)->dict:
+        if isinstance(audio, str):
+            return self.predict_path(audio, prams)
+        return self.predict(audio, sampling_rate, prams)
+
+    @staticmethod
+    def list_models()->dict:
+        return list(models_json["vr_network"].keys())
+
+

@@ -5,7 +5,7 @@ import soundfile as sf
 import math
 import platform
 import traceback
-from . import pyrb
+import pyrb
 from scipy.signal import correlate, hilbert
 import io
 
