@@ -12,7 +12,7 @@ from lib_v5.vr_network import nets
 from lib_v5.vr_network import nets_new
 from lib_v5.vr_network.model_param_init import ModelParameters
 from pathlib import Path
-from gui_data.constants import *
+from GUI.lib_v5.constants import *
 from gui_data.error_handling import *
 from scipy import signal
 import audioread

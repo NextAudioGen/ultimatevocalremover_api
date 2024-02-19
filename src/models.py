@@ -134,3 +134,4 @@ class Demucs(BaseModel):
         audio, sampling_rate = read(audio)
         audio = torch.tensor(audio, dtype=torch.float32)
         return self.predict(audio, sampling_rate)
+    
