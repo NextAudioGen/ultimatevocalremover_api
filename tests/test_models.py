@@ -12,7 +12,7 @@ def test_demucs_load():
     demucs = models.Demucs(name="hdemucs_mmi", other_metadata={"segment":2, "split":True}, 
                            device=device, logger=None)
     
-    name = ""
+    name = "/Users/mohannadbarakat/Downloads/t.wav"
     # Separating an audio file
     res = demucs(name)
     assert res is not None

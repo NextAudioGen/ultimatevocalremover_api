@@ -20,3 +20,8 @@ soundfile>=0.10.3;sys_platform=="win32"
 pytest
 librosa
 audiofile
+pytorch_lightning
+onnxruntime
+onnx
+onnx2pytorch
+ml_collections
