@@ -1,9 +1,13 @@
 import types
+
+from numpy._typing import NDArray
 from .utils.get_models import download_model, model_exists
 import json 
 from .models_dir.demucs.demucs import api as demucs_api
 from .models_dir.demucs import demucs 
 from .models_dir.vr_network import vr_interface as vr_api
+from .models_dir.mdx.mdx_interface import *
+
 import torch
 import os
 from pathlib import Path
@@ -252,4 +256,85 @@ class VrNetwork(BaseModel):
     def list_models()->dict:
         return list(models_json["vr_network"].keys())
 
+class MDX(BaseModel):
+    current_path = os.getcwd()
+    models_data = load_mdx_models_data(model_path=os.path.join(current_path, "src", "models_dir", "mdx", "modelparams", "model_data.json")) 
+
+    def __init__(self, other_metadata:dict, name:str="UVR-MDX-NET-Inst_1", device=None, logger=None):
+        super().__init__(name, architecture="mdx", other_metadata=other_metadata)
+        self.sample_rate = 44100
+        current_path = os.getcwd()
+        model_path = os.path.join(current_path, "src", "models_dir", "mdx", "weights", name) 
+
+        model_hash = get_model_hash_from_path(model_path)
+        
+        dim_t = model_data['mdx_dim_t_set']
+        model_data = MDX.models_data[model_hash]
+        self.model_path = model_path
+        self.model_hash = model_hash
+        self.model_data = model_data
+
+        model_run, (dim_c, hop) = load_modle(model_path, device, segment_size=segment_size, dim_t=dim_t)
+        self.model_run = model_run
+
+        other_metadata['dim_c'] = dim_c
+        other_metadata['hop'] = hop
+        self.device = device
+        self.init_other_metadata(other_metadata)
+    
+    def model_data_to_other_metadata(self, model_data:dict):
+        self.model_data = model_data
+
+        other_metadata = {
+            'n_fft': model_data['mdx_n_fft_scale_set'],
+            'dim_f': model_data['mdx_dim_f_set'],
+            'compensate': model_data['compensate'],
+            'primary_stem': model_data['primary_stem'],
+        }
+        self.set_other_metadata(other_metadata)
+
+    def init_other_metadata(self, other_metadata):
+        self.other_metadata = {
+            'segment_size': 256,
+            'overlap': 0.75,
+            'mdx_batch_size': 1,
+            'semitone_shift': 0,
+            'adjust': 1.08, 
+            'denoise': False,
+            'is_invert_spec': False,
+            'is_match_frequency_pitch': True,
+            'overlap_mdx': None
+        }
+
+        self.other_metadata.update(other_metadata)
+
+    def set_other_metadata(self, metadata:dict):
+        self.other_metadata.update(**metadata)
+    
+    def predict(self, audio: NDArray, sampling_rate: int, **kwargs) -> dict:
+        mix = prepare_mix(audio_file)
+
+        stems = demix(mix, prams, device=self.device)
+
+        second_stem = get_secondery_stems(stems, mix, prams, device=self.device)
+
+        dect_stems = nparray_stem_to_dict(stems, second_stem, model_data)
+
+        return dect_stems
+
+    def predict_path(self, audio: str, **kwargs) -> dict:
+        audio, sampling_rate = read(audio)
+        return self.predict(audio, sampling_rate)
+    
+    def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, **kwargs)->dict:
+        if isinstance(audio, str):
+            return self.predict_path(audio)
+        return self.predict(audio, sampling_rate)
+    
+    def to(self, device:str):
+        self.device = device
+
+    @staticmethod
+    def list_models()->dict:
+        return list(models_json["mdx"].keys())
 

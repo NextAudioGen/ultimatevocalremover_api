@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from modules import TFC_TDF
+from .modules import TFC_TDF
 from pytorch_lightning import LightningModule
 
 dim_s = 4

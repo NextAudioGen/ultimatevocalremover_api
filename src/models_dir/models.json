@@ -13,5 +13,19 @@
                 "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/1_HP-UVR.pth"
             ]
         }
+    },
+    "mdx":{
+        "UVR-MDX-NET-Inst_1":{
+            "model_path":[
+                "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/UVR-MDX-NET-Inst_1.onnx"
+            ]       
+        }
+    },
+    "mdxc":{
+        "MDX23C-8KFFT-InstVoc_HQ":{
+            "model_path":[
+                "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/MDX23C-8KFFT-InstVoc_HQ.ckpt"
+            ]
+        }
     }
 }
