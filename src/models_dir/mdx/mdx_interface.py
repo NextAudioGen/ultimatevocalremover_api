@@ -12,7 +12,6 @@ from onnx2pytorch import ConvertModel
 
 import torch
 import audiofile
-from IPython.display import Audio, display
 import soundfile as sf
 import json 
 import hashlib
@@ -194,7 +193,7 @@ def pitch_fix(source, sr_pitched, org_mix, semitone_shift):
     source = spec_utils.match_array_shapes(source, org_mix)
     return source
 
-def demix(mix, prams, device='cpu', is_match_mix=False):
+def demix(model_run, mix, prams, device='cpu', is_match_mix=False):
     
     semitone_shift = prams['semitone_shift']
     overlap = prams['overlap']
@@ -297,14 +296,14 @@ def match_frequency_pitch(mix, prams):
 
     return source
 
-def get_secondery_stems(source, mix, prams, device='cpu'):
+def get_secondery_stems(model_run, source, mix, prams, device='cpu'):
     mdx_net_cut = False
 
     if (prams['primary_stem'] in MDX_NET_FREQ_CUT) and prams['is_match_frequency_pitch']:
         mdx_net_cut = True
 
     if mdx_net_cut:
-        raw_mix = demix(match_frequency_pitch(mix, prams), prams, device=device, is_match_mix=True)  
+        raw_mix = demix(model_run, match_frequency_pitch(mix, prams), prams, device=device, is_match_mix=True)  
     else:
         match_frequency_pitch(mix, prams)
 

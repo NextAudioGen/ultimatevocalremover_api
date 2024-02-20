@@ -265,14 +265,20 @@ class MDX(BaseModel):
         self.sample_rate = 44100
         current_path = os.getcwd()
         model_path = os.path.join(current_path, "src", "models_dir", "mdx", "weights", name) 
-
-        model_hash = get_model_hash_from_path(model_path)
+        file_name = os.listdir(model_path)[0]
+        model_path = os.path.join(model_path, file_name)
         
-        dim_t = model_data['mdx_dim_t_set']
+        model_hash = get_model_hash_from_path(model_path)
         model_data = MDX.models_data[model_hash]
+        dim_t = model_data['mdx_dim_t_set']
         self.model_path = model_path
         self.model_hash = model_hash
         self.model_data = model_data
+
+        if "segment_size" in other_metadata:
+            segment_size = other_metadata["segment_size"]
+        else:
+            segment_size = 256
 
         model_run, (dim_c, hop) = load_modle(model_path, device, segment_size=segment_size, dim_t=dim_t)
         self.model_run = model_run
@@ -281,6 +287,7 @@ class MDX(BaseModel):
         other_metadata['hop'] = hop
         self.device = device
         self.init_other_metadata(other_metadata)
+        self.model_data_to_other_metadata(model_data)
     
     def model_data_to_other_metadata(self, model_data:dict):
         self.model_data = model_data
@@ -312,13 +319,12 @@ class MDX(BaseModel):
         self.other_metadata.update(**metadata)
     
     def predict(self, audio: NDArray, sampling_rate: int, **kwargs) -> dict:
-        mix = prepare_mix(audio_file)
+        prams = self.other_metadata
 
-        stems = demix(mix, prams, device=self.device)
-
-        second_stem = get_secondery_stems(stems, mix, prams, device=self.device)
-
-        dect_stems = nparray_stem_to_dict(stems, second_stem, model_data)
+        mix = prepare_mix(audio)
+        stems = demix(self.model_run, mix, prams, device=self.device)
+        second_stem = get_secondery_stems(self.model_run, stems, mix, prams, device=self.device)
+        dect_stems = nparray_stem_to_dict(stems, second_stem, self.model_data)
 
         return dect_stems
 
