@@ -16,7 +16,7 @@ torch>=1.8.1
 torchaudio>=0.8,<2.1
 tqdm
 treetable
-soundfile>=0.10.3;sys_platform=="win32"
+soundfile>=0.10.3
 pytest
 librosa
 audiofile
