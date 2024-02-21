@@ -12,7 +12,7 @@ def test_demucs_load():
     demucs = models.Demucs(name="hdemucs_mmi", other_metadata={"segment":2, "split":True}, 
                            device=device, logger=None)
     
-    name = ""
+    name = "/Users/mohannadbarakat/Downloads/t.wav"
     # Separating an audio file
     res = demucs(name)
     assert res is not None
@@ -32,7 +32,6 @@ def test_demucs_load():
     audiofile.write(base_path, base, demucs.sample_rate)
     audiofile.write(drums_path, drums, demucs.sample_rate)
     audiofile.write(other_path, other, demucs.sample_rate)
-
 
 def test_vr_load():
     if torch.cuda.is_available(): device = "cuda"
@@ -56,7 +55,49 @@ def test_vr_load():
     audiofile.write(vocals_path, vocals, VrNetwork.sample_rate)
     audiofile.write(instrumental_path, instrumental, VrNetwork.sample_rate)
 
+def test_mdx_load():
+    if torch.cuda.is_available(): device = "cuda"
+    elif torch.backends.mps.is_available(): device = torch.device("mps")
+    else: device = "cpu"
+    print("device:", device)
+    mdx = models.MDX(name="UVR-MDX-NET-Inst_1", other_metadata={}, 
+                           device=device, logger=None)
+    
+    name = "/Users/mohannadbarakat/Downloads/t.wav"
+    # Separating an audio file
+    seperted_audio = mdx(name)
+    assert seperted_audio is not None
+    
+    print("seperted_audio:", seperted_audio.keys())
 
+    vocals = seperted_audio["vocals"]
+    instrumental = seperted_audio["instrumental"]
+    vocals_path = "vocals_mdx.mp3"
+    instrumental_path = "instrumental_mdx.mp3"
+    audiofile.write(vocals_path, vocals, mdx.sample_rate)
+    audiofile.write(instrumental_path, instrumental, mdx.sample_rate)
+
+def test_mdxc_load():
+    if torch.cuda.is_available(): device = "cuda"
+    elif torch.backends.mps.is_available(): device = torch.device("mps")
+    else: device = "cpu"
+    print("device:", device)
+    mdxc = models.MDXC(name="MDX23C-8KFFT-InstVoc_HQ", other_metadata={}, 
+                           device=device, logger=None)
+    
+    name = "/Users/mohannadbarakat/Downloads/t.wav"
+    # Separating an audio file
+    seperted_audio = mdxc(name)
+    assert seperted_audio is not None
+    
+    print("seperted_audio:", seperted_audio.keys())
+
+    vocals = seperted_audio["vocals"]
+    instrumental = seperted_audio["instrumental"]
+    vocals_path = "vocals_mdxc.mp3"
+    instrumental_path = "instrumental_mdxc.mp3"
+    audiofile.write(vocals_path, vocals, mdxc.sample_rate)
+    audiofile.write(instrumental_path, instrumental, mdxc.sample_rate)
 
 if __name__ == "__main__":
     # test_demucs_load()

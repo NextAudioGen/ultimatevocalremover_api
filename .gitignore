@@ -38,3 +38,4 @@ other.mp3
 
 **/*.wav
 **/*.mp3
+**/.pytest_cache
