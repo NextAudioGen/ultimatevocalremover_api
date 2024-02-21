@@ -101,3 +101,8 @@ tasks](https://arxiv.org/pdf/2305.07489.pdf)
 - [HYBRID TRANSFORMERS FOR MUSIC SOURCE SEPARATION](https://arxiv.org/pdf/2211.08553.pdf)
 - [KUIELab-MDX-Net: A Two-Stream Neural Network for Music Demixing](https://arxiv.org/abs/2111.12203)
 
+# Core Developers
+
+- [Mohannad Barakat](https://github.com/mohannadEhabBarakat/)
+- [Noha Magdy](https://github.com/Noha-Magdy)
+- [Mohtady Ehab](https://github.com/Mohtady-Ehab)
