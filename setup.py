@@ -13,7 +13,7 @@ setup(
    authors='Mohannad Barakat',
    author_email="Mohannad.Barakat@fau.de",
    license='MIT',
-   package_dir={'':'src'},
+   package_dir={'uvr':'src'},
    long_description=open('README.md').read(),
    install_requires=required,
    url="https://github.com/NextAudioGen/ultimatevocalremover_api.git"
