@@ -30,7 +30,7 @@ drums = seperted_audio["drums"]
 other = seperted_audio["other"]
 ```
 # Archetecture:
-```bash
+```text
 Ultimate Vocal Remover API
 ├── src
 │   ├── audiotools.py 
