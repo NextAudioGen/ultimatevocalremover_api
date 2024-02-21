@@ -15,6 +15,13 @@ pip install .
 ```
 # Usage
 ```python
+import uvr
+from uvr import models
+from uvr.utils.get_models import download_all_models
+import torch
+import audiofile
+import json
+
 models_json = json.load(open("/content/ultimatevocalremover_api/src/models_dir/models.json", "r"))
 download_all_models(models_json)
 name = {name_of_your_audio}
