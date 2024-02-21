@@ -72,8 +72,8 @@ def test_mdx_load():
 
     vocals = seperted_audio["vocals"]
     instrumental = seperted_audio["instrumental"]
-    vocals_path = "vocals_vr.mp3"
-    instrumental_path = "instrumental_vr.mp3"
+    vocals_path = "vocals_mdx.mp3"
+    instrumental_path = "instrumental_mdx.mp3"
     audiofile.write(vocals_path, vocals, mdx.sample_rate)
     audiofile.write(instrumental_path, instrumental, mdx.sample_rate)
 
@@ -94,8 +94,8 @@ def test_mdxc_load():
 
     vocals = seperted_audio["vocals"]
     instrumental = seperted_audio["instrumental"]
-    vocals_path = "vocals_vr.mp3"
-    instrumental_path = "instrumental_vr.mp3"
+    vocals_path = "vocals_mdxc.mp3"
+    instrumental_path = "instrumental_mdxc.mp3"
     audiofile.write(vocals_path, vocals, mdxc.sample_rate)
     audiofile.write(instrumental_path, instrumental, mdxc.sample_rate)
 
