@@ -1,10 +1,13 @@
 ![Static Badge](https://img.shields.io/badge/passing-tests-blue)
 ![Static Badge](https://img.shields.io/badge/pre_release-red)
 <a href="https://www.buymeacoffee.com/mohannadbarakat" target="_blank"><img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-gray?logo=buy-me-a-coffee" alt="Buy Me A Coffee"></a>
+<a href="https://colab.research.google.com/drive/1qf17AV5KU_8v0f29zUnPHQBbr3iX8bu6?usp=sharing" target="_blank"><img src="https://img.shields.io/badge/colab-notebook-yellow" alt="Buy Me A Coffee"></a>
 
 # Ultimate Vocal Remover API v0.1
 
 This is a an API for ultimate vocal removing. It is designed to be expandable with new models/algorethems while maintaining a simple interface. 
+[Colab demo](https://colab.research.google.com/drive/1qf17AV5KU_8v0f29zUnPHQBbr3iX8bu6?usp=sharing)
+
 
 # Install
 If you intend to edit the code
