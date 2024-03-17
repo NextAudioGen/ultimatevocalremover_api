@@ -16,6 +16,8 @@ setup(
    package_dir={'uvr':'src'},
    long_description=open('README.md').read(),
    install_requires=required,
-   url="https://github.com/NextAudioGen/ultimatevocalremover_api.git"
-
+   url="https://github.com/NextAudioGen/ultimatevocalremover_api.git",
+    package_data={
+        'uvr': ['**/*.txt', '**/*.t7', '**/*.pth', '**/*.json', '**/*.yaml', '**/*.yml']
+    }
 )
