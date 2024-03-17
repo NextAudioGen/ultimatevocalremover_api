@@ -3,6 +3,8 @@ import glob
 import urllib.request 
 from typing import List
 
+uvr_path = Path(__file__).parent.parent
+
 def download_model(model_name:str, model_arch:str, model_path:List[str]=None, logger=None)->str:
     """Download model from Hugging Face model hub
     
@@ -19,13 +21,11 @@ def download_model(model_name:str, model_arch:str, model_path:List[str]=None, lo
     if model_path is None:
         if logger:
             logger.error(f"Model path is not provided for {model_name} auto loading from models.json file")
-        current_path = os.getcwd()
-        models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+        models_json_path = os.path.join(uvr_path, "models_dir", "models.json")
         models = json.load(open(models_json_path, "r"))
         model_path = models[model_arch][model_name]["model_path"]
         
-    current_path = os.getcwd()
-    save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights", model_name)
+    save_path = os.path.join(uvr_path, "models_dir", model_arch, "weights", model_name)
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -68,8 +68,7 @@ def model_exists(model_name:str, model_arch:str, files:List=None)->bool:
     if len(model_name.split('.')) > 1:
         model_name = model_name.split('.')[0]
     
-    current_path = os.getcwd()
-    save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights", model_name)
+    save_path = os.path.join(uvr_path, "models_dir", model_arch, "weights", model_name)
     if files is not None:
         for file in files:
             local_model_path = os.path.join(save_path, file)
@@ -109,8 +108,7 @@ def download_all_models(models_json:dict=None, logger=None)->dict:
     if models_json is None:
         if logger:
             logger.error(f"Model path is not provided for {model_name} auto loading from models.json file")
-        current_path = os.getcwd()
-        models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+        models_json_path = os.path.join(uvr_path, "models_dir", "models.json")
         models_json = json.load(open(models_json_path, "r"))
         
     for model_arch, models in models_json.items():

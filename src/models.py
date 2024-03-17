@@ -20,8 +20,8 @@ from typing import Union
 
 sys.modules['demucs'] = demucs  # creates a packageA entry in sys.modules
 
-current_path = os.getcwd()
-models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+uvr_path = Path(__file__).parent
+models_json_path = os.path.join(uvr_path, "models_dir", "models.json")
 with open(models_json_path, "r") as f:
     models_json = json.load(f)
 class BaseModel:
@@ -104,8 +104,7 @@ class Demucs(BaseModel):
     
     def __init__(self, other_metadata:dict, name:str="htdemucs", device=None, logger=None):
         super().__init__(name, architecture="demucs", other_metadata=other_metadata)
-        current_path = os.getcwd()
-        self.model_path = os.path.join(current_path, "src", "models_dir", "demucs", "weights", name) 
+        self.model_path = os.path.join(uvr_path, "models_dir", "demucs", "weights", name) 
         self.model_api = demucs_api.Separator(self.name, repo=Path(self.model_path), device=self.device, **other_metadata)
         self.sample_rate = self.model_api._samplerate
   
@@ -154,8 +153,7 @@ class VrNetwork(BaseModel):
             logger (_type_, optional): logger. Defaults to None.
         """
         super().__init__(name, architecture="vr_network", other_metadata=other_metadata)
-        current_path = os.getcwd()
-        model_path = os.path.join(current_path, "src", "models_dir", "vr_network", "weights", name) 
+        model_path = os.path.join(uvr_path, "models_dir", "vr_network", "weights", name) 
         
         files = os.listdir(model_path)
         for file_ in files:
@@ -258,14 +256,12 @@ class VrNetwork(BaseModel):
         return list(models_json["vr_network"].keys())
 
 class MDX(BaseModel):
-    current_path = os.getcwd()
-    models_data = mdx_api.load_mdx_models_data(model_path=os.path.join(current_path, "src", "models_dir", "mdx", "modelparams", "model_data.json")) 
+    models_data = mdx_api.load_mdx_models_data(model_path=os.path.join(uvr_path, "models_dir", "mdx", "modelparams", "model_data.json")) 
 
     def __init__(self, other_metadata:dict, name:str="UVR-MDX-NET-Inst_1", device=None, logger=None):
         super().__init__(name, architecture="mdx", other_metadata=other_metadata)
         self.sample_rate = 44100
-        current_path = os.getcwd()
-        model_path = os.path.join(current_path, "src", "models_dir", "mdx", "weights", name) 
+        model_path = os.path.join(uvr_path, "models_dir", "mdx", "weights", name) 
         file_name = os.listdir(model_path)[0]
         model_path = os.path.join(model_path, file_name)
         
@@ -346,20 +342,18 @@ class MDX(BaseModel):
         return list(models_json["mdx"].keys())
 
 class MDXC(BaseModel):
-    current_path = os.getcwd()
-    models_data = mdxc_api.load_mdxc_models_data(model_path=os.path.join(current_path, "src", "models_dir", "mdxc", "modelparams", "model_data.json")) 
+    models_data = mdxc_api.load_mdxc_models_data(model_path=os.path.join(uvr_path, "models_dir", "mdxc", "modelparams", "model_data.json")) 
 
     def __init__(self, name: str, other_metadata: dict, device=None, logger=None):
         super().__init__(name, "mdxc", other_metadata, device, logger)
 
         self.sample_rate = 44100
-        current_path = os.getcwd()
-        model_path = os.path.join(current_path, "src", "models_dir", "mdxc", "weights", name) 
+        model_path = os.path.join(uvr_path, "models_dir", "mdxc", "weights", name) 
         file_name = os.listdir(model_path)[0]
         model_path = os.path.join(model_path, file_name)
         model_hash = mdxc_api.get_model_hash_from_path(model_path=model_path)
 
-        model_prams_dir = os.path.join(current_path, "src", "models_dir", "mdxc", "modelparams") 
+        model_prams_dir = os.path.join(uvr_path, "models_dir", "mdxc", "modelparams") 
         model_data = mdxc_api.load_mdxc_model_data(MDXC.models_data, model_hash, model_path=model_prams_dir)
         # print(type(model_data))
         model_run = mdxc_api.load_modle(model_path, model_data, device)

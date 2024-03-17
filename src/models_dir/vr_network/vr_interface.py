@@ -533,8 +533,8 @@ def get_audio_dict(y_spec:NDArray, v_spec:NDArray, stems:dict,
     audio_res = rename_audio_res_dict(audio_res, stems)
     return audio_res
 
-current_path = os.getcwd()
-MODELS_DATA = load_vr_models_data(os.path.join(current_path, "src", "models_dir", "vr_network", "modelparams", "model_data.json"))
+uvr_path = Path(__file__).parent.parent.parent
+MODELS_DATA = load_vr_models_data(os.path.join(uvr_path, "models_dir", "vr_network", "modelparams", "model_data.json"))
 
 if __name__ == "__main__":
     import audiofile
