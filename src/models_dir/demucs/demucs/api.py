@@ -25,7 +25,7 @@ import subprocess
 import torch as th
 import torchaudio as ta
 
-from dora.log import fatal
+# from dora.log import fatal
 from pathlib import Path
 from typing import Optional, Callable, Dict, Tuple, Union
 
@@ -340,7 +340,8 @@ def list_models(repo: Optional[Path] = None) -> Dict[str, Dict[str, Union[str, P
         bag_repo = BagOnlyRepo(REMOTE_ROOT, model_repo)
     else:
         if not repo.is_dir():
-            fatal(f"{repo} must exist and be a directory.")
+            # fatal(f"{repo} must exist and be a directory.")
+            pass
         model_repo = LocalRepo(repo)
         bag_repo = BagOnlyRepo(repo, model_repo)
     return {"single": model_repo.list_model(), "bag": bag_repo.list_model()}

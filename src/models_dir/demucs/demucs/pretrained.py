@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 import typing as tp
 
-from dora.log import fatal, bold
+# from dora.log import fatal, bold
 
 from .hdemucs import HDemucs
 from .repo import RemoteRepo, LocalRepo, ModelOnlyRepo, BagOnlyRepo, AnyModelRepo, ModelLoadingError  # noqa
@@ -70,7 +70,8 @@ def get_model(name: str,
         bag_repo = BagOnlyRepo(REMOTE_ROOT, model_repo)
     else:
         if not repo.is_dir():
-            fatal(f"{repo} must exist and be a directory.")
+            # fatal(f"{repo} must exist and be a directory.")
+            pass
         model_repo = LocalRepo(repo)
         bag_repo = BagOnlyRepo(repo, model_repo)
     any_repo = AnyModelRepo(model_repo, bag_repo)
@@ -91,7 +92,11 @@ def get_model_from_args(args):
     """
     if args.name is None:
         args.name = DEFAULT_MODEL
-        print(bold("Important: the default model was recently changed to `htdemucs`"),
+        # print(bold("Important: the default model was recently changed to `htdemucs`"),
+        #       "the latest Hybrid Transformer Demucs model. In some cases, this model can "
+        #       "actually perform worse than previous models. To get back the old default model "
+        #       "use `-n mdx_extra_q`.")
+        print("Important: the default model was recently changed to `htdemucs`",
               "the latest Hybrid Transformer Demucs model. In some cases, this model can "
               "actually perform worse than previous models. To get back the old default model "
               "use `-n mdx_extra_q`.")

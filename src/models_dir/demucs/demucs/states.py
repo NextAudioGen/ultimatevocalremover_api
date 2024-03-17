@@ -16,7 +16,7 @@ from pathlib import Path
 import warnings
 
 from omegaconf import OmegaConf
-from dora.log import fatal
+# from dora.log import fatal
 import torch
 
 
@@ -24,9 +24,10 @@ def _check_diffq():
     try:
         import diffq  # noqa
     except ImportError:
-        fatal('Trying to use DiffQ, but diffq is not installed.\n'
-              'On Windows run: python.exe -m pip install diffq \n'
-              'On Linux/Mac, run: python3 -m pip install diffq')
+        # fatal('Trying to use DiffQ, but diffq is not installed.\n'
+        #       'On Windows run: python.exe -m pip install diffq \n'
+        #       'On Linux/Mac, run: python3 -m pip install diffq')
+        pass
 
 
 def get_quantizer(model, args, optimizer=None):

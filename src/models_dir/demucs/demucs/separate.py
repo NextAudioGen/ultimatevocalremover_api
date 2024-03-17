@@ -8,7 +8,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from dora.log import fatal
+# from dora.log import fatal
 import torch as th
 
 from .api import Separator, save_audio, list_models
@@ -124,7 +124,8 @@ def main(opts=None):
                               jobs=args.jobs,
                               segment=args.segment)
     except ModelLoadingError as error:
-        fatal(error.args[0])
+        # fatal(error.args[0])
+        pass
 
     max_allowed_segment = float('inf')
     if isinstance(separator.model, HTDemucs):
@@ -132,9 +133,9 @@ def main(opts=None):
     elif isinstance(separator.model, BagOfModels):
         max_allowed_segment = separator.model.max_allowed_segment
     if args.segment is not None and args.segment > max_allowed_segment:
-        fatal("Cannot use a Transformer model with a longer segment "
-              f"than it was trained for. Maximum segment is: {max_allowed_segment}")
-
+        # fatal("Cannot use a Transformer model with a longer segment "
+        #       f"than it was trained for. Maximum segment is: {max_allowed_segment}")
+        pass
     if isinstance(separator.model, BagOfModels):
         print(
             f"Selected model is a bag of {len(separator.model.models)} models. "
@@ -142,12 +143,13 @@ def main(opts=None):
         )
 
     if args.stem is not None and args.stem not in separator.model.sources:
-        fatal(
-            'error: stem "{stem}" is not in selected model. '
-            "STEM must be one of {sources}.".format(
-                stem=args.stem, sources=", ".join(separator.model.sources)
-            )
-        )
+        # fatal(
+        #     'error: stem "{stem}" is not in selected model. '
+        #     "STEM must be one of {sources}.".format(
+        #         stem=args.stem, sources=", ".join(separator.model.sources)
+        #     )
+        # )
+        pass
     out = args.out / args.name
     out.mkdir(parents=True, exist_ok=True)
     print(f"Separated tracks will be stored in {out.resolve()}")
