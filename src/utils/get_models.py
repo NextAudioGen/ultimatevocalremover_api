@@ -3,12 +3,12 @@ import glob
 import urllib.request 
 from typing import List
 
-def download_model(model_name:str, model_path:List[str], model_arch:str, logger=None)->str:
+def download_model(model_name:str, model_arch:str, model_path:List[str]=None, logger=None)->str:
     """Download model from Hugging Face model hub
     
     Args:
         model_name (str): model name. 
-        model_path (list[str]): model pathS to download the model from.
+        model_path (list[str]): model pathS to download the model from. Defaults to None (loads paths from uvr/models_dir/models.json file)
         model_arch (str): model architecture. A path in ../models_dir/{model_arch}/weights/{model_name}
                             If path is not found it will be created. And if the model is already downloaded it will not be downloaded again.
         logger (logging.Logger, optional): logger. Defaults to None.
@@ -16,6 +16,14 @@ def download_model(model_name:str, model_path:List[str], model_arch:str, logger=
     Returns:
         str: path to the downloaded model
     """
+    if model_path is None:
+        if logger:
+            logger.error(f"Model path is not provided for {model_name} auto loading from models.json file")
+        current_path = os.getcwd()
+        models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+        models = json.load(open(models_json_path, "r"))
+        model_path = models[model_arch][model_name]["model_path"]
+        
     current_path = os.getcwd()
     save_path = os.path.join(current_path, "src", "models_dir", model_arch, "weights", model_name)
 
@@ -85,11 +93,11 @@ models_json = {
 }
 """
 
-def download_all_models(models_json:dict, logger=None)->dict:
+def download_all_models(models_json:dict=None, logger=None)->dict:
     """Download all models from the models_json
     
     Args:
-        models_json (dict): dictionary of models to download
+        models_json (dict): dictionary of models to download. Defaults to None (loads paths from uvr/models_dir/models.json file)
         logger (logging.Logger, optional): logger. Defaults to None.
 
     Returns:
@@ -98,6 +106,13 @@ def download_all_models(models_json:dict, logger=None)->dict:
                 If the model is already downloaded it will not be downloaded again. And if the model failed to download it will be None.
     """
     paths = {}
+    if models_json is None:
+        if logger:
+            logger.error(f"Model path is not provided for {model_name} auto loading from models.json file")
+        current_path = os.getcwd()
+        models_json_path = os.path.join(current_path, "src", "models_dir", "models.json")
+        models_json = json.load(open(models_json_path, "r"))
+        
     for model_arch, models in models_json.items():
         paths[model_arch] = {}
         for model_name, model_data in models.items():

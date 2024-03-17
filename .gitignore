@@ -39,3 +39,10 @@ other.mp3
 **/*.wav
 **/*.mp3
 **/.pytest_cache
+
+build/
+dependency_links.txt
+PKG-INFO
+requires.txt
+SOURCES.txt
+top_level.txt
