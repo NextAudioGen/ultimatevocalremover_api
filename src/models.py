@@ -119,7 +119,7 @@ class Demucs(BaseModel):
             dict: separated audio
         """
         origin, separated = self.model_api.separate_tensor(audio, sampling_rate)
-        return {"origin":origin, "separated":separated}
+        return separated
     
     def to(self, device:str):
         self.model_api.update_parameter(device=device)
@@ -231,7 +231,7 @@ class VrNetwork(BaseModel):
                                           input_high_end=input_high_end, 
                                           input_high_end_h=input_high_end_h)
 
-        return {"origin":audio, "separated":audio_res}
+        return audio_res
     
     def to(self, device:str):
         self.device = device
@@ -323,7 +323,7 @@ class MDX(BaseModel):
         second_stem = mdx_api.get_secondery_stems(self.model_run, stems, mix, prams, device=self.device)
         dect_stems = mdx_api.nparray_stem_to_dict(stems, second_stem, self.model_data)
 
-        return {"origin":audio, "separated":dect_stems}
+        return dect_stems
 
     def predict_path(self, audio: str, **kwargs) -> dict:
         audio, sampling_rate = read(audio)
@@ -385,7 +385,7 @@ class MDXC(BaseModel):
         stems = mdxc_api.demix(mix, self.other_metadata, self.model_run, self.model_data, self.device)
         stems = mdxc_api.rename_stems(stems)
 
-        return {"origin":audio, "separated":stems}
+        return stems
     
     def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, **kwargs)->dict:
         if isinstance(audio, str):

@@ -1,0 +1,34 @@
+{
+    "demucs": {
+        "hdemucs_mmi": {
+            "download": true,
+            "load": true,
+            "run": true,
+            "time": 11.507731676101685
+        }
+    },
+    "vr_network": {
+        "1_HP-UVR": {
+            "download": true,
+            "load": true,
+            "run": false,
+            "time": 0
+        }
+    },
+    "mdx": {
+        "UVR-MDX-NET-Inst_1": {
+            "download": true,
+            "load": true,
+            "run": true,
+            "time": 53.67989706993103
+        }
+    },
+    "mdxc": {
+        "MDX23C-8KFFT-InstVoc_HQ": {
+            "download": true,
+            "load": true,
+            "run": true,
+            "time": 1182.3123500347137
+        }
+    }
+}
