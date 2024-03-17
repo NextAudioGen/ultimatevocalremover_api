@@ -16,6 +16,7 @@ import math
 import os
 from .constants import NON_ACCOM_STEMS, VOCAL_STEM, OPERATING_SYSTEM, SYSTEM_PROC, SYSTEM_ARCH, ARM, N_BINS
 import pathlib
+from pathlib import Path
 
 
 class ModelParameters(object):
