@@ -1,19 +1,71 @@
 from ..src import models
-from ..src.utils import get_models
+from ..src.utils import get_models, fastio
 import torch
 import audiofile
 from pathlib import Path
 import os, json
 import time
+import pytest
 
 uvr_path = os.path.join(Path(__file__).parent.parent, "src")
-class TestModels:
-    models_json = json.load(open(os.path.join(uvr_path, "models_dir", "models.json"), "r"))
-    os.system("wget https://huggingface.co/datasets/Mohannad/test_NextAudioGen_uvr/resolve/main/temp.mp3")
-    audio = "./temp.mp3"
 
-    def test_all_models(self):
+
+models_json = json.load(open(os.path.join(uvr_path, "models_dir", "models.json"), "r"))
+
+# models_json = {"demucs" : models_json["demucs"]}
+
+if not os.path.exists("temp.mp3"):
+    os.system("wget https://huggingface.co/datasets/Mohannad/test_NextAudioGen_uvr/resolve/main/temp.mp3")
+
+if not os.path.exists("temp.wav"):
+    os.system("wget https://huggingface.co/datasets/Mohannad/test_NextAudioGen_uvr/resolve/main/temp.wav")
+
+if not os.path.exists("temp.flac"):
+    os.system("wget https://huggingface.co/datasets/Mohannad/test_NextAudioGen_uvr/resolve/main/temp.flac")
+
+audio = "./temp"
+modes = [None, "wav", "mp3", "flac"]
+
+skip_arch = ["vr_network"]
+
+for arch in skip_arch:
+    if arch in models_json: 
+        del models_json[arch]
+
+def get_tests():
+    """
+    Returns a list of tests to run
+    """
+    tests = []
+    for arch in models_json.keys():
+        for model_name in models_json[arch]:
+            for mode in modes:
+                if mode is None:
+                    audio_ = fastio.read(audio+".mp3")
+                    tests.append((arch, model_name, audio_, mode))
+                else:
+                    tests.append((arch, model_name, audio, mode))
+    return tests
+
+class TestModels:
+
+    models_json = models_json
+    audio = audio
+    modes = modes
+    models_status = {}
+
+    @pytest.mark.parametrize('architecture, model_name, file_name, file_mode', get_tests())
+    def test_a_model(self, architecture, model_name, file_name, file_mode, hyperparameters=None):
+
         """
+        Args:
+        architecture: str, the architecture of the model
+        model_name: str, the name of the model
+        file_name: str, the name of the audio file
+        file_mode: str, the mode of the audio file. Default is "wav" so the file name should be "file_name.wav". If None then the file name should be (AudioFile, SampleRate)
+        hyperparameters: dict, the hyperparameters of the model. Default is None
+
+
         each point in this list is a function that does the following:
         ✅1- download  model function and asssert that the model is downloaded. Takes model name and architecture
         ✅2- load model function and assert that the model is loaded. Takes model name, architecture and hyperparameters
@@ -21,52 +73,66 @@ class TestModels:
         4- del model and assert that the model is deleted (future)
         5- accumulate the time, status of each model and save it in a file
         """
-        models_status = {}
+        models_status = self.models_status
         passed = True
-        for arch in self.models_json.keys():
+        arch = architecture
+        if file_mode is not None:
+            audio = file_name+"."+file_mode
+        else:
+            audio = file_name
+
+        if arch not in self.models_status:
             models_status[arch] = {}
-            for model_name in self.models_json[arch]:
-                models_status[arch][model_name] = {
-                    "download": False,
-                    "load": False,
-                    "run": False,
-                    "time": 0
+        
+        if file_mode is not None:
+            file_mode = "audio"
+
+        if model_name not in self.models_status[arch]:
+            models_status[arch][model_name] = {}
+
+        models_status[arch][model_name][file_mode]={
+                "download": False,
+                "load": False,
+                "run": False,
+                "time": 0
                 }
-                t1 = time.time()
-                try:
-                    model_path = self.download_model(model_name, arch)
-                    models_status[arch][model_name]["download"] = True
-                except Exception as e:
-                    print(f"Failed to download {model_name} from {self.models_json[arch][model_name]['model_path']} with error {e}")
-                    passed = False
-                    continue
-                
-                try:
-                    model = self.load_model(model_name, arch)
-                    models_status[arch][model_name]["load"] = True
-                except Exception as e:
-                    print(f"Failed to load {model_name} from {model_path} with error {e}")
-                    passed = False
-                    continue
-                
-                try:
-                    seperted_audio = self.run_model(model, self.audio)
-                    models_status[arch][model_name]["run"] = True
-                except Exception as e:
-                    print(f"Failed to run {model_name} from {model_path} with error {e}")
-                    passed = False
-                    raise e
-                    continue
 
-                t2 = time.time()
-                models_status[arch][model_name]["time"] = t2 - t1
+        t1 = time.time()
+        try:
+            model_path = self.download_model(model_name, arch)
+            models_status[arch][model_name][file_mode]["download"] = True
+        except Exception as e:
+            print(f"Failed to download {model_name} from {self.models_json[arch][model_name]['model_path']} with error {e}")
+            passed = False
+            
+        
+        try:
+            model = self.load_model(model_name, arch)
+            models_status[arch][model_name][file_mode]["load"] = True
+        except Exception as e:
+            print(f"Failed to load {model_name} from {model_path} with error {e}")
+            passed = False
+            
+        
+        try:
+            seperted_audio = self.run_model(model, audio)
+            models_status[arch][model_name][file_mode]["run"] = True
+        except Exception as e:
+            print(f"Failed to run {model_name} from {model_path} with error {e}")
+            passed = False
+            raise e
+            
 
-                del model
-                # assert not os.path.exists(model_path)
+        t2 = time.time()
+        models_status[arch][model_name][file_mode]["time"] = t2 - t1
 
+        del model
+        # assert not os.path.exists(model_path)
+
+        self.models_status = models_status
         with open(os.path.join(uvr_path, "..", "tests", "models_status.json"), "w") as f:
             json.dump(models_status, f, indent=4)
-        os.remove("./temp.mp3")
+
         assert passed
 
     def download_model(self, model_name, architecture):
@@ -108,8 +174,12 @@ class TestModels:
         return model
 
     def run_model(self, model, audio_path):
-        audio, sr = audiofile.read(audio_path)
-        seperted_audio = model(audio_path)
+        if type(audio_path) == str:
+            seperted_audio = model(audio_path)
+            audio, sr = audiofile.read(audio_path)
+        else:
+            audio, sr = audio_path
+            seperted_audio = model(audio, sr)
         assert seperted_audio is not None
         for key in seperted_audio.keys():
             assert seperted_audio[key].shape[0] > 0
@@ -147,27 +217,27 @@ class TestModels:
 #     audiofile.write(drums_path, drums, demucs.sample_rate)
 #     audiofile.write(other_path, other, demucs.sample_rate)
 
-# def test_vr_load():
-#     if torch.cuda.is_available(): device = "cuda"
-#     elif torch.backends.mps.is_available(): device = torch.device("mps")
-#     else: device = "cpu"
-#     print("device:", device)
-#     VrNetwork = models.VrNetwork(name="1_HP-UVR", other_metadata={}, 
-#                            device=device, logger=None)
+def test_vr_load():
+    if torch.cuda.is_available(): device = "cuda"
+    elif torch.backends.mps.is_available(): device = torch.device("mps")
+    else: device = "cpu"
+    print("device:", device)
+    VrNetwork = models.VrNetwork(name="1_HP-UVR", other_metadata={}, 
+                           device=device, logger=None)
     
-#     name = "/Users/mohannadbarakat/Downloads/t.wav"
-#     # Separating an audio file
-#     seperted_audio = VrNetwork(name)
-#     assert seperted_audio is not None
+    name = "temp.wav"
+    # Separating an audio file
+    seperted_audio = VrNetwork(name)
+    assert seperted_audio is not None
     
-#     print("seperted_audio:", seperted_audio.keys())
+    print("seperted_audio:", seperted_audio.keys())
 
-#     vocals = seperted_audio["vocals"]
-#     instrumental = seperted_audio["instrumental"]
-#     vocals_path = "vocals_vr.mp3"
-#     instrumental_path = "instrumental_vr.mp3"
-#     audiofile.write(vocals_path, vocals, VrNetwork.sample_rate)
-#     audiofile.write(instrumental_path, instrumental, VrNetwork.sample_rate)
+    vocals = seperted_audio["vocals"]
+    instrumental = seperted_audio["instrumental"]
+    vocals_path = "vocals_vr.mp3"
+    instrumental_path = "instrumental_vr.mp3"
+    audiofile.write(vocals_path, vocals, VrNetwork.sample_rate)
+    audiofile.write(instrumental_path, instrumental, VrNetwork.sample_rate)
 
 # def test_mdx_load():
 #     if torch.cuda.is_available(): device = "cuda"

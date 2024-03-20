@@ -254,9 +254,12 @@ def loading_mix(audio_file:Union[str, NDArray], mp:ModelParameters, is_vr_51_mod
     
     bands_n = len(mp.param['band'])
     if OPERATING_SYSTEM == 'Darwin':
-            wav_resolution = 'polyphase' if SYSTEM_PROC == ARM or ARM in SYSTEM_ARCH else bp['res_type']
+        if SYSTEM_PROC == ARM or ARM in SYSTEM_ARCH:
+            wav_resolution = 'polyphase'  
+        else:
+             wav_resolution = "soxr_hq"
     else:
-        wav_resolution = bp['res_type']
+        wav_resolution = "soxr_hq"
     # audio_file = spec_utils.write_array_to_mem(audio_file, subtype=wav_type_set)
     
     is_mp3 = False

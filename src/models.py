@@ -13,6 +13,7 @@ import torch
 import os
 from pathlib import Path
 import sys
+import numpy as np
 import numpy.typing as npt
 from .utils.fastio import read
 # from functools import singledispatch
@@ -24,6 +25,7 @@ uvr_path = Path(__file__).parent
 models_json_path = os.path.join(uvr_path, "models_dir", "models.json")
 with open(models_json_path, "r") as f:
     models_json = json.load(f)
+    
 class BaseModel:
     def __init__(self, name:str, architecture:str, other_metadata:dict, device=None, logger=None):
         """Base model class
@@ -118,6 +120,11 @@ class Demucs(BaseModel):
         Returns:
             dict: separated audio
         """
+        if isinstance(audio, np.ndarray): 
+            audio = torch.from_numpy(audio)
+        elif isinstance(audio, list): 
+            audio = torch.tensor(audio, dtype=torch.float32)
+        
         origin, separated = self.model_api.separate_tensor(audio, sampling_rate)
         return separated
     

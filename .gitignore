@@ -38,6 +38,7 @@ other.mp3
 
 **/*.wav
 **/*.mp3
+**/*.flac
 **/.pytest_cache
 
 build/
