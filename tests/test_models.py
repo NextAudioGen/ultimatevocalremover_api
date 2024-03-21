@@ -84,7 +84,7 @@ class TestModels:
         if arch not in self.models_status:
             models_status[arch] = {}
         
-        if file_mode is not None:
+        if file_mode is None:
             file_mode = "audio"
 
         if model_name not in self.models_status[arch]:

@@ -1,33 +1,85 @@
 {
     "demucs": {
         "hdemucs_mmi": {
-            "null": {
-                "download": true,
-                "load": true,
-                "run": true,
-                "time": 11.214818716049194
-            },
             "audio": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 11.522094488143921
+                "time": 12.789438009262085
+            },
+            "wav": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 11.579363584518433
+            },
+            "mp3": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 11.691022872924805
+            },
+            "flac": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 11.3600914478302
             }
         }
     },
     "mdx": {
         "UVR-MDX-NET-Inst_1": {
-            "null": {
-                "download": true,
-                "load": true,
-                "run": true,
-                "time": 54.85640501976013
-            },
             "audio": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 55.05820059776306
+                "time": 56.17162847518921
+            },
+            "wav": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 55.580698013305664
+            },
+            "mp3": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 55.09851956367493
+            },
+            "flac": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 55.50956702232361
+            }
+        }
+    },
+    "mdxc": {
+        "MDX23C-8KFFT-InstVoc_HQ": {
+            "audio": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 1212.349402666092
+            },
+            "wav": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 1208.3275980949402
+            },
+            "mp3": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 1209.7146935462952
+            },
+            "flac": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 1201.2756328582764
             }
         }
     }
