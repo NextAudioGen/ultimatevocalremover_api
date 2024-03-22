@@ -161,6 +161,10 @@ class VrNetwork(BaseModel):
         """
         super().__init__(name, architecture="vr_network", other_metadata=other_metadata)
         model_path = os.path.join(uvr_path, "models_dir", "vr_network", "weights", name) 
+        if device is None:
+            if torch.cuda.is_available(): device = "cuda"
+            elif torch.backends.mps.is_available(): device = torch.device("mps")
+            else: device = "cpu"
         
         files = os.listdir(model_path)
         for file_ in files:
