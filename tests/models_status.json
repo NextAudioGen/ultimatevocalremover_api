@@ -5,25 +5,53 @@
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 12.789438009262085
+                "time": 28.517844915390015
             },
             "wav": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 11.579363584518433
+                "time": 19.17659068107605
             },
             "mp3": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 11.691022872924805
+                "time": 20.161988019943237
             },
             "flac": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 11.3600914478302
+                "time": 23.07073998451233
+            }
+        }
+    },
+    "vr_network": {
+        "1_HP-UVR": {
+            "audio": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 11.637473106384277
+            },
+            "wav": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 12.053731918334961
+            },
+            "mp3": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 17.92900800704956
+            },
+            "flac": {
+                "download": true,
+                "load": true,
+                "run": true,
+                "time": 10.97541093826294
             }
         }
     },
@@ -33,25 +61,25 @@
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 56.17162847518921
+                "time": 6.675442218780518
             },
             "wav": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 55.580698013305664
+                "time": 4.095139265060425
             },
             "mp3": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 55.09851956367493
+                "time": 4.160974740982056
             },
             "flac": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 55.50956702232361
+                "time": 4.121398687362671
             }
         }
     },
@@ -61,25 +89,25 @@
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 1212.349402666092
+                "time": 71.7358889579773
             },
             "wav": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 1208.3275980949402
+                "time": 74.15330004692078
             },
             "mp3": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 1209.7146935462952
+                "time": 76.09534502029419
             },
             "flac": {
                 "download": true,
                 "load": true,
                 "run": true,
-                "time": 1201.2756328582764
+                "time": 72.53368592262268
             }
         }
     }

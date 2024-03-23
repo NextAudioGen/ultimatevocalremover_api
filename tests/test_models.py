@@ -26,7 +26,7 @@ if not os.path.exists("temp.flac"):
 audio = "./temp"
 modes = [None, "wav", "mp3", "flac"]
 
-skip_arch = ["vr_network"]
+skip_arch = []#["vr_network"]
 
 for arch in skip_arch:
     if arch in models_json: 
