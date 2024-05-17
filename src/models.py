@@ -106,6 +106,8 @@ class Demucs(BaseModel):
     
     def __init__(self, other_metadata:dict, name:str="htdemucs", device=None, logger=None):
         super().__init__(name, architecture="demucs", other_metadata=other_metadata)
+
+        self.device = device
         self.model_path = os.path.join(uvr_path, "models_dir", "demucs", "weights", name) 
         self.model_api = demucs_api.Separator(self.name, repo=Path(self.model_path), device=self.device, **other_metadata)
         self.sample_rate = self.model_api._samplerate
@@ -121,9 +123,9 @@ class Demucs(BaseModel):
             dict: separated audio
         """
         if isinstance(audio, np.ndarray): 
-            audio = torch.from_numpy(audio)
+            audio = torch.from_numpy(audio).to(self.device)
         elif isinstance(audio, list): 
-            audio = torch.tensor(audio, dtype=torch.float32)
+            audio = torch.tensor(audio, dtype=torch.float32).to(self.device)
         
         origin, separated = self.model_api.separate_tensor(audio, sampling_rate)
         return separated
@@ -142,7 +144,7 @@ class Demucs(BaseModel):
 
     def predict_path(self, audio: str, **kwargs) -> dict:
         audio, sampling_rate = read(audio)
-        audio = torch.tensor(audio, dtype=torch.float32)
+        audio = torch.tensor(audio, dtype=torch.float32).to(self.device)
         return self.predict(audio, sampling_rate)
     
     def __call__(self, audio:Union[npt.NDArray, str], sampling_rate:int=None, **kwargs)->dict:
