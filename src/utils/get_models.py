@@ -30,7 +30,7 @@ def download_model(model_name:str, model_arch:str, model_path:List[str]=None, lo
     save_path = os.path.join(uvr_path, "models_dir", model_arch, "weights", model_name)
 
     if not os.path.exists(save_path):
-        os.makedirs(save_path)
+        os.makedirs(save_path, exist_ok=True)
     
     files = [path.split("/")[-1] for path in model_path]
     if model_exists(model_name=model_name, model_arch=model_arch, files=files):
